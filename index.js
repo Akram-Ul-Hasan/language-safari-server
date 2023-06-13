@@ -28,18 +28,65 @@ async function run() {
       .db("language-safari-db")
       .collection("classes");
     const userCollection = client.db("language-safari-db").collection("users");
-    const instructorCollection = client.db("language-safari-db").collection("instructor");
+    const instructorCollection = client
+      .db("language-safari-db")
+      .collection("instructors");
+    const cartCollection = client.db("language-safari-db").collection("carts");
 
-
-    
-
-    // classes crud operation
-    app.get("/classes", async (req, res) => {
-      const result = await classCollection.find().toArray();
+    // cart
+    app.get("carts", async (req, res) => {
+      const email = req.body.email;
+      if (!email) {
+        res.send([]);
+      }
+      const query = { email: email };
+      const result = await cartCollection.find(query).toArray();
       res.send(result);
     });
 
-   
+    app.post("/carts", async (req, res) => {
+      const newCart = req.body;
+      console.log(newCart);
+      const result = await cartCollection.insertOne(newCart);
+      res.send(result);
+    });
+
+    // users crud operation
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "user already exists" });
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+    // instructors crud operation
+    app.get("/instructors", async (req, res) => {
+      let result;
+      if (req.query?.search) {
+        result = await instructorCollection.find().sort({ student: 1 }).limit(6).toArray();
+      } 
+      else {
+        result = await instructorCollection.find().toArray();
+      }
+      res.send(result);
+    });
+
+    // classes crud operation
+    app.get("/classes", async (req, res) => {
+      
+      let result;
+      if (req.query?.search) {
+        result = await classCollection.find().sort({ student: 1 }).limit(6).toArray();
+      } else {
+        result = await classCollection.find().toArray();
+      }
+
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });

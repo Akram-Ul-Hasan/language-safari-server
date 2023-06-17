@@ -149,7 +149,13 @@ async function run() {
       } else {
         result = await classCollection.find().toArray();
       }
+      res.send(result);
+    });
 
+    app.post("/classes", async (req, res) => {
+      const newClass = req.body;
+     
+      const result = await classCollection.insertOne(newClass);
       res.send(result);
     });
 

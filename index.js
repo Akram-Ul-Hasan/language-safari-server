@@ -84,19 +84,44 @@ async function run() {
       res.send(result);
     });
 
-    app.patch('/users/admin/:id', async(req, res) => {
+    app.patch('/users/role/:id', async(req, res) => {
       const id = req.params.id;
+      let result;
       const filter = { _id: new ObjectId(id)};
-      const updateDoc = {
-        $set: {
-          role: 'admin'
-        },
-      };
-
-      const result = await userCollection.updateOne(filter, updateDoc);
+      const user = await userCollection.findOne(filter);
+      if(user.role==='instructor'){
+        const updateDoc = {
+          $set: {
+            role: 'admin'
+          },
+        };
+  
+         result = await userCollection.updateOne(filter, updateDoc);
+      }
+      else{
+        const updateDoc = {
+          $set: {
+            role: 'instructor'
+          },
+        };
+  
+         result = await userCollection.updateOne(filter, updateDoc);
+      }
+      
       res.send(result);
     })
+    
+    app.get('/users/role/:email', async(req, res)=>{
+      const email = req.params.email;
+      console.log(email);
+      const query = {email: email}
+      const user = await userCollection.findOne(query);
+      const result = {
+        role: user?.role
+      }
+      res.send(result);
 
+    })
     // instructors crud operation
     app.get("/instructors", async (req, res) => {
       let result;
